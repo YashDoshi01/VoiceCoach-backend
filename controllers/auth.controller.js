@@ -1,6 +1,8 @@
 import User from "../models/user.model.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
+import dotenv from "dotenv";
+dotenv.config();
 
 const HashPassword = async (password) => {
     const salt = await bcrypt.genSalt(10);
@@ -17,7 +19,7 @@ export const RegisterController = async (req, res) => {
         const hashedPassword = await HashPassword(password);
         const newUser = new User({ email, password: hashedPassword , username});
         await newUser.save();
-        res.status(201).json({ message: 'User registered successfully' });
+        res.status(201).json({success : true  ,  message: 'User registered successfully' });
     } catch (error) {
         res.status(500).json({ message: error });
     }
