@@ -1,0 +1,50 @@
+import mongoose from "mongoose";
+
+const resultSchema = new mongoose.Schema({
+  clarity_score: { type: Number },
+  overall_wpm: { type: Number },
+  filler_count: { type: Number },
+  strategic_pauses: { type: Number },
+  hesitation_gaps: { type: Number },
+  acoustic_metrics: {
+    avg_volume_status: { type: String },
+    pitch_monotony_score: { type: Number },
+  },
+  relevance_score: { type: Number, default: null },
+  suggested_content: [{ type: String }],
+  vague_phrases_found: [{ type: String }],
+  feedback: [{ type: String }],
+});
+
+const metadataSchema = new mongoose.Schema({
+  filename : {type: String},
+  duration: { type: Number },
+  file_size: { type: Number },
+  format: { type: String },
+});
+
+const recordingSchema = new mongoose.Schema(
+  {
+    userId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
+    filePath: {
+      type: String,
+      required: true,
+    },
+    results: {
+      type: resultSchema,
+      default: {}, 
+    },
+    metadata : {
+      type: metadataSchema,
+      default: {},
+    }
+  },
+  { timestamps: true }
+);
+
+const Recording = mongoose.model("Recording", recordingSchema);
+export default Recording;
