@@ -17,6 +17,10 @@ const contentSchema = new mongoose.Schema({
         type : Number,
         default : 0
     },
+    title : {
+        type : String,
+        default : ''
+    }
 });
 const Content = mongoose.model("Content", contentSchema);
 export default Content;

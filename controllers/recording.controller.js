@@ -47,6 +47,7 @@ const results = {
   suggested_content: responseasdata.suggested_content || [],
   vague_phrases_found: responseasdata.vague_phrases_found || [],
   feedback: responseasdata.feedback || [],
+  filler_words_used: responseasdata.filler_words_used || [],
 };
 
     const newRecording = await Recording.create({
@@ -54,6 +55,9 @@ const results = {
       filePath,
       results,
       metadata,
+      transcription: {
+    transcript: responseasdata.transcript 
+  },
     });
     res.status(201).json({ success: true, message: 'Recording created successfully', recording: newRecording });
   } catch (error) {

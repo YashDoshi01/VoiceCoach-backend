@@ -1,5 +1,17 @@
 import mongoose from "mongoose";
 
+const transcriptionSchema = new mongoose.Schema({
+  transcript: [
+    {
+      text: { type: String, required: true },
+      start: { type: Number, required: true },
+      end: { type: Number, required: true },
+      tags: [{ type: String }], 
+    },
+  ],
+});
+
+
 const resultSchema = new mongoose.Schema({
   clarity_score: { type: Number },
   overall_wpm: { type: Number },
@@ -14,6 +26,7 @@ const resultSchema = new mongoose.Schema({
   suggested_content: [{ type: String }],
   vague_phrases_found: [{ type: String }],
   feedback: [{ type: String }],
+  filler_words_used: [{ type: String }],
 });
 
 const metadataSchema = new mongoose.Schema({
@@ -41,7 +54,8 @@ const recordingSchema = new mongoose.Schema(
     metadata : {
       type: metadataSchema,
       default: {},
-    }
+    },
+    transcription: {type : transcriptionSchema , default : {}},
   },
   { timestamps: true }
 );
