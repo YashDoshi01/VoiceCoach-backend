@@ -41,5 +41,5 @@ const PresentationSchema = new mongoose.Schema({
   },
 });
 
-export default mongoose.model("Result", ResultSchema);
-
+const Presentation =  mongoose.model("Presentation", PresentationSchema);
+export default Presentation

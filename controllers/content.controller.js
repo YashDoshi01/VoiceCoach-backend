@@ -4,13 +4,15 @@ import FormData from "form-data";
 export const CreateContentController =  async (req , res) => {
     const formdata  = new FormData();
     try {
-        const { topic , timelimit  } = req.body;
+        const userId = req.user.id;
+        const { topic , timelimit , tone } = req.body;
         // const newtime  = parseInt(timelimit);
         if(!topic || !timelimit){
             return res.status(400).json({ message : "All fields are required"});
         }
         formdata.append("topic" , topic);
         formdata.append("time_limit_minutes" , timelimit);
+        formdata.append("tone" , tone || "Neutral");
         const response = await axios.post(
   "https://ai-presentation-coach.onrender.com/speech_draft",
   formdata,
@@ -27,11 +29,13 @@ export const CreateContentController =  async (req , res) => {
              content : response.data.generated_speech_draft.slice(1).join(" . ")
             }
         const newContent = await Content.create({
+            userId,
             topic,
             timelimit,
             content : result.content,
             wordcount : result.word_count,
-            title : result.title
+            title : result.title,
+            tone : tone || "Neutral"
         });
 
         return res.status(201).json({ message : "Content created successfully" , content : newContent});

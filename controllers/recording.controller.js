@@ -91,3 +91,120 @@ export const GetrecordingByIdController = async (req, res) => {
         res.status(500).json({ message: error });
     }
 };
+
+export const GetDashboardController = async (req, res) => {
+    const userId = req.user.id;
+  
+    try {
+      console.log("userId", userId);
+  
+      // Fetch recordings for this user
+      const recordings = await Recording.find({ userId }, { results: 1 });
+  
+      if (!recordings.length) {
+        return res.status(200).json({
+          success: true,
+          message: "No recordings found",
+          data: {
+            averages: null,
+            totalRecordings: 0,
+            feedbacks: [],
+            overall_feedback: null,
+          },
+        });
+      }
+  
+      const fieldsToAverage = [
+        "clarity_score",
+        "overall_wpm",
+        "filler_count",
+        "strategic_pauses",
+        "hesitation_gaps",
+        "relevance_score",
+      ];
+  
+      const averages = {};
+      const acousticAverages = {};
+  
+      // Calculate numeric averages safely
+      for (const field of fieldsToAverage) {
+        const values = recordings
+          .map(r => r.results?.[field])
+          .filter(v => v !== undefined && v !== null && !isNaN(v));
+  
+        averages[field] =
+          values.length > 0
+            ? parseFloat(
+                (values.reduce((a, b) => a + b, 0) / values.length).toFixed(2)
+              )
+            : 0; // Default to 0 (avoid sending null to AI API)
+      }
+  
+      // Acoustic metric
+      const pitchValues = recordings
+        .map(r => r.results?.acoustic_metrics?.pitch_monotony_score)
+        .filter(v => v !== undefined && v !== null && !isNaN(v));
+  
+      acousticAverages.pitch_monotony_score =
+        pitchValues.length > 0
+          ? parseFloat(
+              (pitchValues.reduce((a, b) => a + b, 0) / pitchValues.length).toFixed(2)
+            )
+          : 0;
+  
+      // Aggregate words, phrases, and feedbacks
+      const allFillerWords = new Set();
+      const allVaguePhrases = new Set();
+      const allFeedbackMessages = [];
+  
+      recordings.forEach(r => {
+        const res = r.results;
+        if (!res) return;
+  
+        if (Array.isArray(res.filler_words_used))
+          res.filler_words_used.forEach(w => allFillerWords.add(w));
+  
+        if (Array.isArray(res.vague_phrases_found))
+          res.vague_phrases_found.forEach(p => allVaguePhrases.add(p));
+  
+        if (Array.isArray(res.feedback))
+          allFeedbackMessages.push(...res.feedback);
+      });
+  
+      // Prepare feedbacks payload for AI API
+      const feedbacks = [
+        {
+          clarity_score: averages.clarity_score || 0,
+          overall_wpm: averages.overall_wpm || 0,
+          filler_count: averages.filler_count || 0,
+          filler_words_used: Array.from(allFillerWords),
+          feedback: allFeedbackMessages.length ? allFeedbackMessages : ["No feedback available."],
+          vague_phrases_found: Array.from(allVaguePhrases),
+        },
+      ];
+  
+      // ✅ Make API call to AI endpoint
+    //   const aiResponse = await axios.post(
+    //     "https://ai-presentation-coach.onrender.com/overall_feedback",
+    //     { feedbacks },
+    //     { headers: { "Content-Type": "application/json" } }
+    //   );
+  
+      // Build final response
+      const result = {
+        averages: { ...averages, acoustic_metrics: acousticAverages },
+        totalRecordings: recordings.length,
+        feedbacks,
+        // overall_feedback: aiResponse.data, // AI's summarized feedback
+      };
+  
+      return res.status(200).json({ success: true, data: result });
+    } catch (error) {
+      console.error("Error in GetDashboardController:", error.response?.data || error.message);
+      return res.status(500).json({
+        success: false,
+        message: error.message,
+        details: error.response?.data || null,
+      });
+    }
+  };
