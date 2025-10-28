@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 
-const RecordingSchema = new mongoose.Schema(
+const VoiceoverSchema = new mongoose.Schema(
   {
     topic: {
       type: String,
@@ -37,4 +37,5 @@ const RecordingSchema = new mongoose.Schema(
   }
 );
 
-export default mongoose.model("Recording", RecordingSchema);
+const Voiceover = mongoose.models.Voiceover || mongoose.model("Voiceover", VoiceoverSchema);
+export default Voiceover;

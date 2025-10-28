@@ -60,5 +60,5 @@ const recordingSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-const Recording = mongoose.model("Recording", recordingSchema);
+const Recording = mongoose.models.Recording || mongoose.model("Recording", recordingSchema);
 export default Recording;
