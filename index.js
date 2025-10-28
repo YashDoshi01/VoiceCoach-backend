@@ -7,6 +7,7 @@ import recordingRouter from './routes/recording.route.js';
 import contentRouter from './routes/content.route.js';
 import presentationRouter from './routes/presentation.route.js';
 import dashboardRouter from './routes/dashboard.route.js';
+import voiceoverRouter from './routes/voiceover.route.js';
 dotenv.config();
 const app  = express();
 
